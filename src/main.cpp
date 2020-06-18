@@ -56,6 +56,14 @@ void setup() {
   ESP.restart();
 #endif
 
+  rtcData.crc32 = 0;
+  rtcData.counter = 0;
+  rtcData.data = 0;
+
+  eepromData.crc32 = 0;
+  eepromData.counter = 0;
+  eepromData.data = 0;
+
   if(!ESP.rtcUserMemoryRead(0, (uint32_t*) &rtcData, sizeof(rtcData))) {
     Serial.println("RTC read failed");
     while(1)
@@ -85,7 +93,8 @@ void setup() {
   } else {
     readEEPROM();
 
-    if(calculateCRC32((const uint8_t *)&eepromData.counter, sizeof(eepromData.counter)*2) != eepromData.crc32) {
+    if((calculateCRC32((const uint8_t *)&eepromData.counter, sizeof(eepromData.counter)*2) != eepromData.crc32) ||
+       (eepromData.counter != rtcData.counter)) {
       Serial.println("EEPROM fail");
       Serial.printf("EEPROM counter %u, data %8x, crc %08x\n", eepromData.counter, eepromData.data, eepromData.crc32);
       Serial.printf("RTC counter %u, data %8x, crc %08x\n", rtcData.counter, rtcData.data, rtcData.crc32);
